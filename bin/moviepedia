@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use App\ShowMovieCommand;
+use Dotenv\Dotenv;
+use Symfony\Component\Console\Application;
+
+// Load the .env file
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
+
+// Create console application
+$application = new Application();
+
+// Register the command
+$application->add(new ShowMovieCommand('show'));
+
+// Run the application
+$application->run();
