@@ -1,0 +1,8 @@
+{
+  "name": "mathiasramilo/docker-challenge",
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}

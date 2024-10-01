@@ -1,0 +1,12 @@
+# Composer dependencies
+/vendor/
+composer.phar
+
+# Environment variables
+/.env
+/.env.local
+
+# Symfony cache, logs, and sessions
+/var/cache/
+/var/log/
+/var/sessions/
