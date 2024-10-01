@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ShowMovieCommand extends Command {
@@ -14,11 +15,13 @@ class ShowMovieCommand extends Command {
 
   protected function configure() {
     $this->setDescription('Fetches information about a movie from OMDB.')
-         ->addArgument('title', InputArgument::REQUIRED, 'The title of the movie.');
+         ->addArgument('title', InputArgument::REQUIRED, 'The title of the movie.')
+         ->addOption('fullPlot', null, InputOption::VALUE_NONE, 'Muestra la trama completa de la película.');
   }
 
   protected function execute(InputInterface $input, OutputInterface $output): int {
     $title = $input->getArgument('title');
+    $fullPlot = $input->getOption('fullPlot') ? 'full' : 'short';
 
     // Create a Guzzle client
     $client = new Client();
@@ -30,7 +33,8 @@ class ShowMovieCommand extends Command {
     $response = $client->request('GET', 'http://www.omdbapi.com/', [
       'query' => [
         't' => $title,
-        'apiKey' => $apiKey
+        'apiKey' => $apiKey,
+        'plot' => $fullPlot
       ]
       ]);
 
