@@ -10,76 +10,64 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ShowMovieCommand extends Command {
-  protected static $defaultName = 'show';
+class ShowMovieCommand extends Command
+{
+	protected static $defaultName = 'show';
 
-  protected function configure() {
-    $this->setDescription('Fetches information about a movie from OMDB.')
-         ->addArgument('title', InputArgument::REQUIRED, 'The title of the movie.')
-         ->addOption('fullPlot', null, InputOption::VALUE_NONE, 'Muestra la trama completa de la película.');
-  }
+	protected function configure()
+	{
+		$this->setDescription('Fetches information about a movie from OMDB.')
+			->addArgument('title', InputArgument::REQUIRED, 'The title of the movie.')
+			->addOption('fullPlot', null, InputOption::VALUE_NONE, 'Muestra la trama completa de la película.');
+	}
 
-  protected function execute(InputInterface $input, OutputInterface $output): int {
-    $title = $input->getArgument('title');
-    $fullPlot = $input->getOption('fullPlot') ? 'full' : 'short';
+	protected function execute(InputInterface $input, OutputInterface $output): int
+	{
+		$title = $input->getArgument('title');
+		$fullPlot = $input->getOption('fullPlot') ? 'full' : 'short';
 
-    // Create a Guzzle client
-    $client = new Client();
+		// Create a Guzzle client
+		$client = new Client();
 
-    // Access the API key from the environment
-    $apiKey = $_ENV['OMDB_API_KEY'];
+		// Access the API key from the environment
+		$apiKey = $_ENV['OMDB_API_KEY'];
 
-    // Make the API request
-    $response = $client->request('GET', 'http://www.omdbapi.com/', [
-      'query' => [
-        't' => $title,
-        'apiKey' => $apiKey,
-        'plot' => $fullPlot
-      ]
-      ]);
+		// Make the API request
+		$response = $client->request('GET', 'http://www.omdbapi.com/', [
+			'query' => [
+				't' => $title,
+				'apiKey' => $apiKey,
+				'plot' => $fullPlot
+			]
+		]);
 
-    $movieData = json_decode($response->getBody(), true);
+		$movieData = json_decode($response->getBody(), true);
 
-    // Check if the movie was found
-    if (isset($movieData['Error'])) {
-      $output->writeln("<error>{$movieData['Error']}</error>");
-      return Command::FAILURE;
-    }
+		// Check if the movie was found
+		if (isset($movieData['Error'])) {
+			$output->writeln("<error>{$movieData['Error']}</error>");
+			return Command::FAILURE;
+		}
 
-    // Display movie title - year
-    $output->writeln("<info>{$movieData['Title']} - {$movieData['Year']}</info>");
+		// Display movie title - year
+		$output->writeln("<info>{$movieData['Title']} - {$movieData['Year']}</info>");
 
-    // Create a table to display movie information
-    $table = new Table($output);
-    $table->setRows([
-            ['Title', $movieData['Title']],
-            ['Year', $movieData['Year']],
-            ['Rated', $movieData['Rated']],
-            ['Released', $movieData['Released']],
-            ['Runtime', $movieData['Runtime']],
-            ['Genre', $movieData['Genre']],
-            ['Director', $movieData['Director']],
-            ['Writer', $movieData['Writer']],
-            ['Actors', $movieData['Actors']],
-            ['Plot', $movieData['Plot']],
-            ['Language', $movieData['Language']],
-            ['Country', $movieData['Country']],
-            ['Awards', $movieData['Awards']],
-            ['Poster', $movieData['Poster']],
-            ['Metascore', $movieData['Metascore']],
-            ['imdbRating', $movieData['imdbRating']],
-            ['imdbVotes', $movieData['imdbVotes']],
-            ['imdbID', $movieData['imdbID']],
-            ['Type', $movieData['Type']],
-            ['DVD', $movieData['DVD']],
-            ['BoxOffice', $movieData['BoxOffice']],
-            ['Production', $movieData['Production']],
-            ['Website', $movieData['Website']],
-            ['Response', $movieData['Response']],
-          ]);
+		// Create a table to display movie information
+		$table = new Table($output);
+		$rows = [];
 
-    $table->render();
+		foreach ($movieData as $key => $value) {
+			// Check if the value is an array, and convert it to a string if necessary
+			if (is_array($value)) {
+				$value = implode(', ', $value); // Join array elements into a string
+			}
 
-    return Command::SUCCESS;
-  }
+			$rows[] = [$key, $value];
+		}
+
+		$table->setRows($rows);
+		$table->render();
+
+		return Command::SUCCESS;
+	}
 }
